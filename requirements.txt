@@ -1,13 +1,6 @@
-polars>=0.20.0
-pyarrow>=15.0.0
-fastexcel>=0.10.0
-#calamine>=0.2.0
-openpyxl>=3.1.0
-streamlit>=1.32.0
-plotly>=5.19.0
 fastapi>=0.110.0
 uvicorn>=0.28.0
-python-multipart>=0.0.9
-psutil>=5.9.8
-scikit-learn>=1.4.0
 pydantic-settings>=2.2.1
+python-multipart>=0.0.9
+polars>=0.20.0
+fastexcel>=0.10.0
