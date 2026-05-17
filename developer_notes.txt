@@ -1,0 +1,94 @@
+py -m venv venv
+.\venv\Scripts\Activate
+pip install -r requirements.txt
+
+
+Step by step 
+
+Steps for with python polars and grpahical display of data using only python package not jquery 
+
+If I am using this i need to read 1 Lacks data from excel and it's shuld be fast and fully responsive
+
+fully responsive with all device from small mobile to big projecters.
+
+and read excel file and showing the data in table,charts,grpah,tree etc. grpahical presention
+
+
+ultra-fast, responsive
+
+here in excel data is approx 5K
+
+using requirments.txt 
+and venv 
+
+structher of the folder should be easily upload from github and ready to live on vercel 
+
+polars streamlit plotly openpyxl calamine flask and fast api
+import and export excels 
+
+show drill drown cpu,memory,time,browser and all other types of cpu and memory uses
+
+also add AI Ml package for next level setup
+
+shuold create api and use them 
+
+upload data excel
+export in the excel 
+drill down of interactive data anylisis 
+
+if it is possiable to upload different different type of excel and number or cols and type of data of it's cols
+
+running the complete project with only single command 
+No jQuery/JS required
+
+url and other things which is need to be come from env should come from env 
+
+also make sure the vercel.json code 
+
+if need code structher should be confertable with vercel for live demo
+
+Step by step 
+
+Steps for with python polars and grpahical display of data using only python package not jquery 
+
+
+
+and read excel file and showing the data in table,charts,grpah,tree etc. grpahical presention
+
+
+
+here in excel data is approx 5K
+
+using requirments.txt 
+and venv 
+
+structher of the folder should be easily upload from github and ready to live on vercel 
+
+polars streamlit plotly openpyxl calamine flask
+import and export excels 
+
+show drill drown cpu,memory,time,browser and all other types of cpu and memory uses
+
+also add AI Ml package for next level setup
+
+shuold create api and use them 
+
+upload data excel
+export in the excel 
+drill down of interactive data anylisis 
+
+if it is possiable to upload different different type of excel and number or cols and type of data of it's cols
+
+running the complete project with only single command 
+No jQuery/JS required
+
+url and other things which is need to be come from env should come from env 
+
+also make sure the vercel.json code 
+
+if need code structher should be confertable with vercel for live demo
+
+Polars, Streamlit, and Plotly
+
+
+Scikit-Learn for AI ML
