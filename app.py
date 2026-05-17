@@ -12,38 +12,42 @@ from sklearn.preprocessing import StandardScaler
 
 # 1. Page Configuration for cross-device viewports (Mobile to Projector)
 st.set_page_config(
-    page_title="Polars AI Workspace | Rohit Jain",
+    page_title="Advanced Tech AI Workspace | Rohit Jain",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Advanced CSS injection for custom viewport panels, metrics, and global scroll box contexts
+# Advanced CSS injection to guarantee layout responsiveness and add smooth anchor scrolling
 st.markdown("""
     <style>
-        /* Compact structural layout margins */
-        .reportview-container .main .block-container { max-width: 100%; padding-bottom: 3rem; }
+        html { scroll-behavior: smooth; }
+        .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; max-width: 100%; }
+        div[data-testid="stHeader"] { height: 0px !important; background: transparent !important; }
         footer { visibility: hidden; }
         
-        /* Attractive dashboard metrics cards */
+        .header-title-main {
+            font-size: clamp(1.2rem, 2.5vw, 2.2rem);
+            font-weight: bold;
+            color: #ffffff;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
         .stMetric { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px solid #334155; }
+        div[data-testid="stFileUploader"] { padding: 0 !important; margin-bottom: 10px !important; }
         
-        /* Compact file uploader styling spacing */
-        div[data-testid="stFileUploader"] { padding: 0 !important; margin-bottom: 15px !important; }
-        
-        /* Custom styled marquee container */
         .custom-marquee {
             background-color: #1e293b;
             color: #38bdf8;
-            padding: 8px;
+            padding: 6px;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             border-radius: 6px;
             border: 1px solid #334155;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
-        /* Enforce internal scrollable zones inside each expander layout block */
         .scrollbox {
             max-height: 400px;
             overflow-y: auto;
@@ -53,7 +57,24 @@ st.markdown("""
             background-color: #0f172a;
         }
         .branding-text { font-size: 0.85rem; line-height: 1.4; color: #cbd5e1; }
-        .section-watermark { font-size: 0.85rem; color: #38bdf8; font-weight: bold; margin-bottom: 10px; }
+        .section-watermark { font-size: 0.85rem; color: #38bdf8; font-weight: bold; margin-bottom: 5px; }
+        div.stDownloadButton button { width: auto !important; white-space: nowrap !important; }
+        
+        .nav-link-btn {
+            display: block;
+            text-align: center;
+            background-color: #1e293b;
+            color: #38bdf8 !important;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            font-weight: bold;
+            text-decoration: none !important;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+        }
+        .nav-link-btn:hover { background-color: #334155; color: #ffffff !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -65,14 +86,20 @@ PHOTO_PATH = STATIC_DIR / "images" / "RohitPhoto.jpg"
 RESUME_PATH = STATIC_DIR / "Resume_Original_Rohit_Jain.pdf"
 SAMPLE_EXCEL_PATH = STATIC_DIR / "sample_for_dashboard.xlsx"
 
-# Guarantee the local uploads folder is present
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+# --- INITIALIZE SYSTEM SESSION STATES FOR PERSISTENT DATA STORAGE ---
+if "filter_count" not in st.session_state:
+    st.session_state.filter_count = 1
+if "cached_df" not in st.session_state:
+    st.session_state.cached_df = None
+if "last_uploaded" not in st.session_state:
+    st.session_state.last_uploaded = None
 
 # --- SIDEBAR BRANDING & ADVANCED ASSET MANAGEMENT LAYER ---
 with st.sidebar:
     st.markdown("### 🛠️ Platform Architect")
     
-    # Profile Picture Rendering
     if PHOTO_PATH.exists():
         st.image(str(PHOTO_PATH), caption="Rohit Jain", use_container_width=True)
     else:
@@ -93,12 +120,33 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # File Uploader placed intentionally BEFORE Developer Assets
     uploaded_file = st.file_uploader("Upload Working Excel Sheet (.xlsx, .xls)", type=["xlsx", "xls"])
     
+    # Instant sample data path setup
+    if SAMPLE_EXCEL_PATH.exists():
+        if st.button("🚀 Work with Sample Data Instantly", use_container_width=True):
+            try:
+                # Instantly cache the sample layout dataframe in session memory
+                st.session_state.cached_df = pl.read_excel(str(SAMPLE_EXCEL_PATH), engine="calamine")
+                st.session_state.last_uploaded = "sample_for_dashboard.xlsx"
+                st.toast("⚡ Loaded system sample context instantly!")
+            except Exception as e:
+                st.sidebar.error(f"Failed to load sample: {e}")
+    else:
+        st.caption("⚠️ Sample file missing for instant simulation path.")
+    
+    st.markdown("### 🗺️ Quick Workspace Navigation")
+    st.markdown('<a class="nav-link-btn" href="#top-anchor">⬆️ Scroll To Top Banner</a>', unsafe_allow_html=True)
+    st.markdown('<a class="nav-link-btn" href="#profile-section">🖥️ Jump To Architect Profile</a>', unsafe_allow_html=True)
+    st.markdown('<a class="nav-link-btn" href="#filter-section">🔍 Jump To Query Matrix</a>', unsafe_allow_html=True)
+    st.markdown('<a class="nav-link-btn" href="#table-section">📊 Jump To Data Preview</a>', unsafe_allow_html=True)
+    st.markdown('<a class="nav-link-btn" href="#graphics-section">📈 Jump To Visual Studio</a>', unsafe_allow_html=True)
+    st.markdown('<a class="nav-link-btn" href="#ai-section">🧠 Jump To ML Analytics</a>', unsafe_allow_html=True)
+    st.markdown('<a class="nav-link-btn" href="#diagnostics-section">🛠️ Jump To Hardware Footer</a>', unsafe_allow_html=True)
+    
+    st.markdown("---")
     st.markdown("### 📥 Developer Assets & Utilities")
     
-    # Binary download handler for CV
     if RESUME_PATH.exists():
         with open(RESUME_PATH, "rb") as pdf_file:
             st.download_button(
@@ -106,12 +154,10 @@ with st.sidebar:
                 data=pdf_file.read(),
                 file_name="Resume_Original_Rohit_Jain.pdf",
                 mime="application/pdf",
-                use_container_width=True
+                use_container_width=True,
+                key="sidebar_resume_btn"
             )
-    else:
-        st.caption("❌ Resume PDF asset missing in static folder.")
         
-    # Binary download handler for Sample Dashboard Dataset
     if SAMPLE_EXCEL_PATH.exists():
         with open(SAMPLE_EXCEL_PATH, "rb") as excel_file:
             st.download_button(
@@ -119,14 +165,34 @@ with st.sidebar:
                 data=excel_file.read(),
                 file_name="sample_for_dashboard.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
+                use_container_width=True,
+                key="sidebar_sample_btn"
             )
-    else:
-        st.caption("❌ Sample Workbook asset missing in static folder.")
 
-# --- MAIN DASHBOARD HEADER & MARQUEE VIEW ---
-st.title("⚡ Advanced Polars Business Intelligence Suite")
-st.markdown("<div class='section-watermark'>Designed & Engineered by Rohit Jain</div>", unsafe_allow_html=True)
+# --- STRUCTURAL PURE-HTML TOP SCROLL ANCHOR ---
+st.markdown('<div id="top-anchor"></div>', unsafe_allow_html=True)
+
+# --- STRUCTURAL PURE-HTML FIXED RESPONSIVE HEADER PATTERN ---
+if SAMPLE_EXCEL_PATH.exists():
+    with open(SAMPLE_EXCEL_PATH, "rb") as top_excel_file:
+        excel_bytes = top_excel_file.read()
+    
+    header_col, btn_col = st.columns([4, 1])
+    with header_col:
+        st.markdown('<h1 class="header-title-main">⚡ Advanced Tech Business Intelligence Suite</h1>', unsafe_allow_html=True)
+        st.markdown("<div class='section-watermark'>Designed & Engineered by Rohit Jain</div>", unsafe_allow_html=True)
+    with btn_col:
+        st.download_button(
+            label="📥 Download Sample Excel",
+            data=excel_bytes,
+            file_name="sample_for_dashboard.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True,
+            key="top_bar_download_btn"
+        )
+else:
+    st.markdown('<h1 class="header-title-main">⚡ Advanced Tech Business Intelligence Suite</h1>', unsafe_allow_html=True)
+    st.markdown("<div class='section-watermark'>Designed & Engineered by Rohit Jain</div>", unsafe_allow_html=True)
 
 # Interactive pure HTML scrolling marquee asset
 st.markdown("""
@@ -140,31 +206,48 @@ st.markdown("""
 # Clock engine processing baseline
 t_start = time.perf_counter()
 
-if "filter_count" not in st.session_state:
-    st.session_state.filter_count = 1
-
+# --- ARTIFACT FILE COLD UPLOAD MEMORY INTERCEPTOR ---
 if uploaded_file is not None:
-    try:
-        # Extract binary data streams
+    # Check if this is a newly introduced file, if so overwrite session cache
+    if st.session_state.last_uploaded != uploaded_file.name:
         file_bytes = uploaded_file.read()
         
-        # --- AUTOMATED FILE PERSISTENCE ENGINE ---
-        # Generate a distinct safe filename using timestamps to avoid directory overwrite collisions
+        # Save a timestamped copy locally
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        saved_file_name = f"{timestamp}_{uploaded_file.name}"
-        destination_path = UPLOAD_DIR / saved_file_name
-        
-        # Write binary stream out to the server uploads path
-        with open(destination_path, "wb") as f:
+        with open(UPLOAD_DIR / f"{timestamp}_{uploaded_file.name}", "wb") as f:
             f.write(file_bytes)
             
-        # Parse data out via high-performance calamine integration layer
-        raw_df = pl.read_excel(file_bytes, engine="calamine")
+        # Parse and write to stable session storage memory
+        st.session_state.cached_df = pl.read_excel(file_bytes, engine="calamine")
+        st.session_state.last_uploaded = uploaded_file.name
+        st.balloons()
+
+# --- VERIFY DATAFRAME PRESENCE VIA PERSISTENT CACHE ---
+if st.session_state.cached_df is not None:
+    try:
+        raw_df = st.session_state.cached_df
         all_columns = raw_df.columns
         
-        st.sidebar.success(f"💾 File safely mirrored to: /uploads/{saved_file_name}")
-        
+        # --- PRESENTATION SECTION: PLATFORM ARCHITECTURE DEPLOYMENT PROFILE ---
+        st.markdown('<div id="profile-section"></div>', unsafe_allow_html=True)
+        st.success("✅ Active Working Memory Dataset Context Loaded Successfully!")
+        with st.chat_message("assistant", avatar="🛠️"):
+            st.markdown("""
+            ### 🖥️ Platform Architecture Deployment Profile
+            **This ultra-fast analytics engine workspace solution was fully engineered and optimized by:**
+            
+            #### **Rohit Jain**
+            *Senior Full-Stack Developer | AI Automation Architect*
+            
+            *   🎯 **AI Architecture & Workflows**
+            *   💻 **Enterprise Full-Stack Engineering**
+            *   📞 **+91 89469 19241**
+            *   ✉️ **engrohitjain5@gmail.com**
+            *   🌐 [**Digital Portfolio Resume**](https://rohitjain-resume.vercel.app/)
+            """, unsafe_allow_html=True)
+
         # --- SECTION 1: COLLAPSIBLE FILTER MATRIX PANEL ---
+        st.markdown('<div id="filter-section"></div>', unsafe_allow_html=True)
         with st.expander("🔍 1. Filter Data Your Way (Dynamic Query Matrix)", expanded=True):
             st.markdown("<div class='section-watermark'>Pipeline Layer: Smart Query Filter Engine by Rohit Jain</div>", unsafe_allow_html=True)
             st.info("Construct layered matching arrays immediately. Use conditions like like, regex, inequalities, or exact equivalence values.")
@@ -188,7 +271,7 @@ if uploaded_file is not None:
                 with col_op:
                     f_op = st.selectbox(f"Operation Type #{i+1}", ["=", "not equal", "like", "%like%", "regex", ">", "<"], key=f"f_op_{i}")
                 with col_val:
-                    f_val = st.text_input(f"Target Evaluation Value #{i+1}", key=f"f_val_{i}")
+                    f_val = st.text_input(f"Target Value #{i+1}", key=f"f_val_{i}")
                     
                 if f_val:
                     active_filters.append({"column": f_col, "operator": f_op, "value": f_val})
@@ -215,9 +298,10 @@ if uploaded_file is not None:
                 elif op == "<":
                     filtered_df = filtered_df.filter(pl.col(col) < float(val))
             except Exception as e:
-                st.sidebar.error(f"Filter evaluation mismatch configuration error: {e}")
+                st.sidebar.error(f"Filter tracking layout context mismatch: {e}")
 
         # --- SECTION 2: COLLAPSIBLE ARCHITECTURAL TABLE MATRIX ---
+        st.markdown('<div id="table-section"></div>', unsafe_allow_html=True)
         with st.expander(f"📊 2. Data Table Preview ({filtered_df.shape[0]} Rows Matching Active Scope)", expanded=True):
             st.markdown("<div class='section-watermark'>Data Grid Layer: Optimized Rendering Engine by Rohit Jain</div>", unsafe_allow_html=True)
             st.markdown('<div class="scrollbox">', unsafe_allow_html=True)
@@ -225,6 +309,7 @@ if uploaded_file is not None:
             st.markdown('</div>', unsafe_allow_html=True)
 
         # --- SECTION 3: COLLAPSIBLE PLOTLY DATA STUDIO GRAPHICAL PRESENTATION CANVAS ---
+        st.markdown('<div id="graphics-section"></div>', unsafe_allow_html=True)
         with st.expander("📈 3. Comprehensive Graphics Presentation Canvas", expanded=True):
             st.markdown("<div class='section-watermark'>Visualization Layer: Interactive Plotly Studio by Rohit Jain</div>", unsafe_allow_html=True)
             st.info("Map metrics to structural elements instantly. Toggle Frequency Counter mode to calculate item distribution volumes instantly.")
@@ -269,6 +354,7 @@ if uploaded_file is not None:
                 st.markdown('</div>', unsafe_allow_html=True)
 
         # --- SECTION 4: COLLAPSIBLE ADVANCED PREDICTIVE AI ENGINE MATRIX ---
+        st.markdown('<div id="ai-section"></div>', unsafe_allow_html=True)
         with st.expander("🧠 4. Predictive Machine Learning Insight Array", expanded=True):
             st.markdown("<div class='section-watermark'>AI Layer: Scikit-Learn Cluster Engine by Rohit Jain</div>", unsafe_allow_html=True)
             st.info("Unsupervised pattern grouping engine scans multidimensional features and assigns records into colored mathematical relationship matrices.")
@@ -296,10 +382,11 @@ if uploaded_file is not None:
     except Exception as general_err:
         st.error(f"Spreadsheet Parsing Conflict Interruption Layer: {general_err}")
 else:
-    st.info("System Engine Listening. Drag and drop any Excel asset via the left control sidebar panels configuration map to initialize analytics workflows.")
+    st.info("System Engine Listening. Drop an Excel spreadsheet into the sidebar or click the instant sample button above to run workflows.")
 
 # --- SECTION 5: COLLAPSIBLE COMPUTATIONAL AND RESOURCE MONITORING TOOLBOX ---
 st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div id="diagnostics-section"></div>', unsafe_allow_html=True)
 with st.expander("🛠️ 5. Real-Time Compute & Engine Execution Profile Diagnostics", expanded=True):
     st.markdown("<div class='section-watermark'>Diagnostics Layer: Low-Level Profiling Core by Rohit Jain</div>", unsafe_allow_html=True)
     
