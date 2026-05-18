@@ -11,13 +11,20 @@ from pathlib import Path
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-# 1. Page Configuration for cross-device viewports & Strict Theme Baseline
+# 1. IMMEDIATE PAGE CONFIGURATION (Must be the absolute first Streamlit execution command)
 st.set_page_config(
     page_title="Advanced Tech AI Workspace | Rohit Jain",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Hard Injection to override head element titles during low-level DOM construction
+st.markdown("""
+    <head>
+        <title>Advanced Tech AI Workspace | Rohit Jain</title>
+    </head>
+""", unsafe_allow_html=True)
 
 # Global Scientific Dark Palette CSS Injections & Component Responsiveness
 st.markdown("""
@@ -172,6 +179,8 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 # Initialize Session State Variables
 if "filter_count" not in st.session_state:
     st.session_state.filter_count = 1
+if "reset_filters" not in st.session_state:
+    st.session_state.reset_filters = False
 
 
 # --- 2. MODAL POPUP GATEWAYS (NATIVE DIALOGS) ---
@@ -249,7 +258,6 @@ with st.sidebar:
     # File Ingestion Mechanisms
     uploaded_file = st.file_uploader("Upload Working Excel/CSV Sheet", type=["xlsx", "xls", "csv"], help="Drop local enterprise data files here to pipeline into the Polars analysis model.")
     
-# Update the display text to reflect the 10 GB capacity
     st.caption("10 GB per file • XLSX, XLS, CSV")
     
     # Fast path: instant sample data trigger button
@@ -415,12 +423,39 @@ elif use_sample_data:
 
 if active_bytes is not None:
     try:
-        # Ingest dataframe using the respective Polars engine type
         if is_csv_format:
-            raw_df = pl.read_csv(active_bytes)
+            try:
+                # Step 1: Write bytes to a local disk temp path to unlock lazy memory-mapped scanning
+                temp_csv_path = UPLOAD_DIR / "stream_processing_buffer.csv"
+                with open(temp_csv_path, "wb") as f:
+                    f.write(active_bytes)
+                    
+                # Step 2: Run a highly forgiving, optimized Lazy Scan
+                raw_df = (
+                    pl.scan_csv(
+                        temp_csv_path,
+                        infer_schema_length=0,        # Scans the entire file background architecture to prevent type-mismatch crashes
+                        ignore_errors=False,          # Keep False so we process all lines instead of dropping whole records
+                        quote_char=None,              # Treats stray double quotes as regular text characters
+                        encoding="utf-8-lossy",       # Converts corrupted encoding symbols seamlessly without crashing
+                        truncate_ragged_lines=True    # FIX: Automatically chops off extra accidental columns on messy rows
+                    )
+                    .collect(streaming=True)          # Executes pipeline out-of-core to process massive files safely
+                )
+                
+            except Exception as csv_pipe_err:
+                # Fallback Strategy: If lazy matrix compilation fails, force parse using the absolute broadest settings
+                raw_df = pl.read_csv(
+                    active_bytes, 
+                    infer_schema_length=0, 
+                    quote_char=None, 
+                    encoding="utf-8-lossy",
+                    truncate_ragged_lines=True
+                )
         else:
-            raw_df = pl.read_excel(active_bytes, engine="calamine")
-            
+            # raise_if_empty=False ensures a completely blank workbook returns an empty DataFrame instead of breaking the app
+            raw_df = pl.read_excel(active_bytes, engine="calamine", raise_if_empty=False)
+        
         all_columns = raw_df.columns
 
         # --- SECTION 1: COLLAPSIBLE FILTER MATRIX PANEL ---
@@ -428,7 +463,7 @@ if active_bytes is not None:
         with st.expander("🔍 1. Filter Data Your Way (Dynamic Query Matrix)", expanded=True):
             st.markdown("<div class='section-watermark'>Pipeline Layer: Smart Query Filter Engine by <a href='https://rohitjain-resume.vercel.app/' target='_blank' style='color:#06b6d4;'>Rohit Jain</a></div>", unsafe_allow_html=True)
             
-            f_btn_col1, f_btn_col2 = st.columns([2, 10])
+            f_btn_col1, f_btn_col2, f_btn_col3 = st.columns([2, 2, 8])
             with f_btn_col1:
                 if st.button("➕ Add Rule", use_container_width=True, help="Inject an extra matching criteria constraint row to down-filter incoming data arrays."):
                     if st.session_state.filter_count < len(all_columns):
@@ -437,20 +472,35 @@ if active_bytes is not None:
                 if st.button("❌ Drop Rule", use_container_width=True, help="Pop the lowest target verification logic wrapper row out of active processing filters."):
                     if st.session_state.filter_count > 1:
                         st.session_state.filter_count -= 1
+            with f_btn_col3:
+                if st.button("🔄 Reset Matrix", use_container_width=False, help="Flush all active query rule conditions and restore original dataset structures."):
+                    st.session_state.filter_count = 1
+                    st.session_state.reset_filters = True
+                    st.rerun()
 
             st.markdown('<div class="scrollbox" style="max-height: 250px;">', unsafe_allow_html=True)
             active_filters = []
             for i in range(st.session_state.filter_count):
                 col_f, col_op, col_val = st.columns([3, 2, 5])
+                
+                f_col_key = f"f_col_{i}_{st.session_state.reset_filters}"
+                f_op_key = f"f_op_{i}_{st.session_state.reset_filters}"
+                f_val_key = f"f_val_{i}_{st.session_state.reset_filters}"
+                
                 with col_f:
-                    f_col = st.selectbox(f"Field Reference #{i+1}", all_columns, key=f"f_col_{i}", help=f"Choose target tracking column metric name for conditional level #{i+1}.")
+                    f_col = st.selectbox(f"Field Reference #{i+1}", all_columns, key=f_col_key, help=f"Choose target tracking column metric name for conditional level #{i+1}.")
                 with col_op:
-                    f_op = st.selectbox(f"Operation Type #{i+1}", ["=", "not equal", "like", "%like%", "regex", ">", "<"], key=f"f_op_{i}", help="Mathematical logic operator to process calculations against cell data.")
+                    f_op = st.selectbox(f"Operation Type #{i+1}", ["=", "not equal", "like", "%like%", "regex", ">", "<"], key=f_op_key, help="Mathematical logic operator to process calculations against cell data.")
                 with col_val:
-                    f_val = st.text_input(f"Target Evaluation Value #{i+1}", key=f"f_val_{i}", help="Type criteria threshold constraints (numbers, phrases, or regular expressions) to strip non-matching shapes.")
+                    f_val = st.text_input(f"Target Evaluation Value #{i+1}", key=f_val_key, help="Type criteria threshold constraints (numbers, phrases, or regular expressions) to strip non-matching shapes.")
                     
-                if f_val:
+                if f_val and not st.session_state.reset_filters:
                     active_filters.append({"column": f_col, "operator": f_op, "value": f_val})
+            
+            if st.session_state.reset_filters:
+                st.session_state.reset_filters = False
+                st.rerun()
+                
             st.markdown('</div>', unsafe_allow_html=True)
 
         # Execution evaluation pipeline over vector configurations
