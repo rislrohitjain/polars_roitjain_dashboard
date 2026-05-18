@@ -30,13 +30,28 @@ st.markdown("""
     </head>
 """, unsafe_allow_html=True)
 
-# Global Scientific Dark Palette CSS Injections & Component Responsiveness
+# FORCE FIXED DARK THEME CONFIGURATION VIA CSS OVERRIDES
 st.markdown("""
     <style>
-        /* Force global strict dark-mode background defaults */
-        .stApp { background-color: #0b0f19; color: #e2e8f0; }
+        /* 1. Force absolute dark background onto all main structural containers */
+        html, body, [data-testid="stAppViewContainer"], .stApp { 
+            background-color: #0b0f19 !important; 
+            color: #e2e8f0 !important; 
+        }
         
-        /* Smooth scrolling physics configuration */
+        /* 2. Force Sidebar to lock into dark mode layout independently */
+        [data-testid="stSidebar"], [data-testid="stSidebar"] > div {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+            border-right: 1px solid #1e293b !important;
+        }
+
+        /* 3. Enforce light-colored typography over all standard labels and texts globally */
+        h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown, [data-testid="stWidgetLabel"] p { 
+            color: #ffffff !important; 
+        }
+        
+        /* 4. Smooth scrolling physics configuration */
         html { scroll-behavior: smooth; }
         
         /* Maximize vertical screen real estate - remove extra top space */
@@ -58,26 +73,28 @@ st.markdown("""
         .header-title-main {
             font-size: clamp(1.2rem, 2.5vw, 2.2rem); 
             font-weight: bold;
-            color: #ffffff;
+            color: #ffffff !important;
             margin: 0;
             line-height: 1.2;
         }
         
-        /* Scientific telemetry cards */
-        .stMetric { background: #111827; padding: 12px; border-radius: 8px; border: 1px solid #1f2937; }
+        /* Scientific telemetry cards locked to dark styling */
+        .stMetric { background: #111827 !important; padding: 12px; border-radius: 8px; border: 1px solid #1f2937 !important; }
+        div[data-testid="stMetricValue"] > div { color: #ffffff !important; }
+        div[data-testid="stMetricLabel"] > div { color: #94a3b8 !important; }
         
         /* Compact file uploader styling spacing */
         div[data-testid="stFileUploader"] { padding: 0 !important; margin-bottom: 10px !important; }
         
         /* Custom styled marquee container */
         .custom-marquee {
-            background-color: #111827;
-            color: #06b6d4;
+            background-color: #111827 !important;
+            color: #06b6d4 !important;
             padding: 6px;
             font-weight: bold;
             font-size: 0.9rem;
             border-radius: 6px;
-            border: 1px solid #1f2937;
+            border: 1px solid #1f2937 !important;
             margin-bottom: 15px;
         }
         
@@ -85,13 +102,14 @@ st.markdown("""
         .scrollbox {
             max-height: 400px;
             overflow-y: auto;
-            border: 1px solid #1e293b;
+            border: 1px solid #1e293b !important;
             padding: 15px;
             border-radius: 6px;
-            background-color: #030712;
+            background-color: #030712 !important;
         }
-        .branding-text { font-size: 0.85rem; line-height: 1.4; color: #cbd5e1; }
-        .section-watermark { font-size: 0.85rem; color: #06b6d4; font-weight: bold; margin-bottom: 5px; }
+        .branding-text { font-size: 0.85rem; line-height: 1.4; color: #cbd5e1 !important; }
+        .section-watermark { font-size: 0.85rem; color: #06b6d4 !important; font-weight: bold; margin-bottom: 5px; }
+        .section-watermark a { color: #06b6d4 !important; text-decoration: none; }
         
         /* Target and shrink button wrappers natively to avoid sizing bloat */
         div.stDownloadButton button { width: auto !important; white-space: nowrap !important; }
@@ -100,23 +118,23 @@ st.markdown("""
         .nav-link-btn {
             display: block;
             text-align: center;
-            background-color: #1e293b;
+            background-color: #1e293b !important;
             color: #06b6d4 !important;
             padding: 8px;
             margin: 5px 0;
             border-radius: 6px;
-            border: 1px solid #334155;
+            border: 1px solid #334155 !important;
             font-weight: bold;
             text-decoration: none !important;
             font-size: 0.85rem;
             transition: background 0.3s ease;
         }
-        .nav-link-btn:hover { background-color: #334155; color: #ffffff !important; }
+        .nav-link-btn:hover { background-color: #334155 !important; color: #ffffff !important; }
 
         /* Scientific Custom Loader Animations */
         .loader-box {
-            background: #0f172a;
-            border-left: 4px solid #06b6d4;
+            background: #0f172a !important;
+            border-left: 4px solid #06b6d4 !important;
             padding: 15px;
             border-radius: 6px;
             margin: 15px 0;
@@ -124,8 +142,8 @@ st.markdown("""
         .loader-spin {
             width: 24px;
             height: 24px;
-            border: 3px solid #334155;
-            border-top: 3px solid #06b6d4;
+            border: 3px solid #334155 !important;
+            border-top: 3px solid #06b6d4 !important;
             border-radius: 50%;
             display: inline-block;
             animation: spin 0.8s linear infinite;
@@ -137,8 +155,8 @@ st.markdown("""
             100% { transform: rotate(360deg); }
         }
         .sidebar-inspect-box {
-            background-color: #030712;
-            border: 1px dashed #334155;
+            background-color: #030712 !important;
+            border: 1px dashed #334155 !important;
             border-radius: 6px;
             padding: 10px;
             margin-top: 10px;
@@ -605,6 +623,7 @@ if active_bytes is not None:
                         
                         color_scale = px.colors.sequential.Electric
                         
+                        # Plotly configuration remains hard-anchored to dark templates
                         if chart_type == "Simple Line Graph":
                             fig = px.line(pandas_view, x=x_target, y=y_target, template="plotly_dark", title=f"Line Matrix — {y_target} Analysis across {x_target}")
                             fig.update_traces(line=dict(color="#06b6d4", width=2.5))
@@ -661,7 +680,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div id="diagnostics-section"></div>', unsafe_allow_html=True)
 with st.expander("🛠️ 5. Real-Time Compute & Engine Execution Profile Diagnostics", expanded=True):
     st.markdown("<div class='section-watermark'>Diagnostics Layer: Low-Level Profiling Core by <a href='https://rohitjain-resume.vercel.app/' target='_blank' style='color:#06b6d4;'>Rohit Jain</a></div>", unsafe_allow_html=True)
-    st.markdown('<div class="scrollbox" style="max-height: 180px; background-color: #020617;">', unsafe_allow_html=True)
+    st.markdown('<div class="scrollbox" style="max-height: 180px; background-color: #020617 !important;">', unsafe_allow_html=True)
     
     process = psutil.Process(os.getpid())
     execution_delta = time.perf_counter() - t_start
@@ -682,8 +701,8 @@ with st.expander("🛠️ 5. Real-Time Compute & Engine Execution Profile Diagno
 
 # Footer Layout Zone with Anchor Nodes
 st.markdown(
-    "<div style='text-align: center; color: #cbd5e1; padding-top: 15px; font-size: 0.85rem; font-weight: bold;'>"
-    "Designed & Developed by <a href='https://rohitjain-resume.vercel.app/' target='_blank' style='color:#06b6d4; text-decoration:none;'>Rohit Jain</a> • Optimized for Mobile Phones, Tablets, and 4K Office Projectors"
+    "<div style='text-align: center; color: #cbd5e1 !important; padding-top: 15px; font-size: 0.85rem; font-weight: bold;'>"
+    "Designed & Developed by <a href='https://rohitjain-resume.vercel.app/' target='_blank' style='color:#06b6d4 !important; text-decoration:none;'>Rohit Jain</a> • Optimized for Mobile Phones, Tablets, and 4K Office Projectors"
     "</div>",
     unsafe_allow_html=True
 )
