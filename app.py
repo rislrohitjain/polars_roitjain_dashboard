@@ -459,7 +459,7 @@ if active_bytes is not None:
                     pl.scan_csv(
                         temp_csv_path,
                         infer_schema_length=10000,
-                        ignore_errors=False,
+                        ignore_errors=True,
                         quote_char=None,
                         encoding="utf-8-lossy",
                         truncate_ragged_lines=True
